@@ -8,7 +8,7 @@ import os
 GPIO.setwarnings(False)
 
 hideKeys = 0
-global iban
+iban = ''
 
 mydb = mysql.connector.connect(
     host='145.24.222.168',

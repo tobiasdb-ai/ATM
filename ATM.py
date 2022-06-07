@@ -17,6 +17,7 @@ mydb = mysql.connector.connect(
     db='pinautomaat_elba',
     port=8001
 )
+db = mydb.cursor()
 
 
 def printKey(key):
@@ -59,11 +60,25 @@ def startPage():
     os.system('clear')
     print("Welcome to El Banco Del Los Hermanos")
     print("Scan your card to begin")
+    global iban 
     iban = readCard()
+    loginPage()
 
 def loginPage():
-    print("Succesfully logged in to account: " + iban)
+    global hideKeys
+    db.execute("SELECT pin FROM bank_account WHERE iban = \"" + iban[:16] + "\"")
+    result = db.fetchone()
+    print(result[0])
+    hideKeys = 1              # 0-->No chars   1--> * 2--> chars
+    print("Succesfully scanned card of account: " + iban)
     print("Type your pin to continue: ")
+    password = getPassword()
+    if (password == str(result[0])):
+        print("Succesfully logged in to bank account")
+        hideKeys = 2
+        firstMenu()
+    else:
+        print("Password is wrong")
 
 
 def getPassword():
@@ -76,14 +91,6 @@ def getKey():
     while (len(keys) < 1):
         time.sleep(0.1)
     return keys[-1:]
-
-
-db = mydb.cursor()
-db.execute("SELECT pin FROM bank_account WHERE iban = \"" + iban[:16] + "\"")
-result = db.fetchone()
-print(result[0])
-hideKeys = 1              # 0-->No chars   1--> * 2--> chars
-password = getPassword()
 
 
 def firstMenu():
@@ -104,9 +111,5 @@ def firstMenu():
         return
 
 
-if (password == str(result[0])):
-    print("Succesfully logged in to bank account")
-    hideKeys = 2
-    firstMenu()
-else:
-    print("Password is wrong")
+
+startPage()

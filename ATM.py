@@ -8,6 +8,7 @@ import os
 GPIO.setwarnings(False)
 
 hideKeys = 0
+global iban
 
 mydb = mysql.connector.connect(
     host='145.24.222.168',
@@ -54,12 +55,15 @@ def readCard():
     return text
 
 
-print("Scan your card to begin")
-# print(readCard())
-iban = readCard()
-print(iban)
+def startPage():
+    os.system('clear')
+    print("Welcome to El Banco Del Los Hermanos")
+    print("Scan your card to begin")
+    iban = readCard()
 
-print("Type your pin to continue: ")
+def loginPage():
+    print("Succesfully logged in to account: " + iban)
+    print("Type your pin to continue: ")
 
 
 def getPassword():

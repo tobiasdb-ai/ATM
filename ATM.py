@@ -68,13 +68,11 @@ def loginPage():
     global hideKeys
     db.execute("SELECT pin FROM bank_account WHERE iban = \"" + iban[:16] + "\"")
     result = db.fetchone()
-    print(result[0])
     hideKeys = 1              # 0-->No chars   1--> * 2--> chars
     print("Succesfully scanned card of account: " + iban)
     print("Type your pin to continue: ")
     password = getPassword()
     if (password == str(result[0])):
-        print("Succesfully logged in to bank account")
         hideKeys = 2
         firstMenu()
     else:
@@ -94,8 +92,8 @@ def getKey():
 
 
 def firstMenu():
-    for i in range(10):
-        print("\n")
+    os.system('clear')
+    print("Succesfully logged in to bank account\n")
     print("Select what you want to do:")
     print("(A)  Withdraw money")
     print("(B)  Check account balance")

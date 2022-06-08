@@ -92,8 +92,8 @@ def wrongPass():
     global keys
     os.system('clear')
     print("\nIncorrect password. What do you want to do:")
-    print("\n(A) Retry")
-    print("\n(*) STOP")
+    print("\n(A)  Retry")
+    print("\n(*)  STOP")
     keys = ""
     menuChoice = getKey()
     if (menuChoice == "A"):
@@ -106,6 +106,13 @@ def getPassword():
     while (len(keys) < 4):
         time.sleep(0.1)
     return keys[-4:]
+
+def getAmount():
+    global hideKeys
+    hideKeys = 2
+    while (len(keys) < 3):
+        time.sleep(0.1)
+    return keys[-3:]
 
 
 def getKey():
@@ -125,7 +132,7 @@ def firstMenu():
     keys = ""
     menuChoice = getKey()
     if (menuChoice == "A"):
-        print("money withdrawal page")
+        withdrawPage()
     if (menuChoice == "B"):
         balancePage()
     if (menuChoice == "*"):
@@ -145,9 +152,90 @@ def balancePage():
     keys = ""
     menuChoice = getKey()
     if (menuChoice == "A"):
-        print("money withdrawal page")
+        withdrawPage()
     if (menuChoice == "*"):
         startPage()
+
+def withdrawPage():
+    os.system('clear')
+    print("\nMoney withdrawal page\n")
+    print("Select the amount of money you wish to withdraw: \n")
+    print("(A)  € 20")
+    print("(B)  € 50")
+    print("(C)  € 70")
+    print("(D)  € 100")
+    print("(#)  Custom amount")
+    print("\n(*)  STOP")
+    global keys
+    keys = ""
+    menuChoice = getKey()
+    if (menuChoice == "A"):
+        dbWithdraw(2000)
+    if (menuChoice == "B"):
+        dbWithdraw(5000)
+    if (menuChoice == "C"):
+        dbWithdraw(7000)
+    if (menuChoice == "D"):
+        dbWithdraw(10000)
+    if (menuChoice == "#"):
+        customAmountPage()
+    if (menuChoice == "*"):
+        startPage()
+
+def customAmountPage():
+    print("\nEnter your custom amount (max €300): €", end='')
+    global keys
+    keys = ""
+    amount = int(getAmount())
+    if (amount <= 300):
+        dbWithdraw(amount*100)
+    else:
+        print("\nUnvalid withdrawal amount")
+        time.sleep(2)
+        withdrawPage()
     
 
+def dbWithdraw(amount):
+    os.system('clear')
+    db.execute("SELECT balance FROM bank_account WHERE id = \"" + str(accID) + "\"")
+    result = db.fetchone()
+    balance = result[0]
+    if (balance >= amount):
+        newBalance = balance - amount
+        db.execute("UPDATE `pinautomaat_elba`.`bank_account` SET `balance` = '" + str(newBalance) + "' WHERE(`id` = '" + str(accID) + "');")
+        mydb.commit()
+        withdrawSucces()
+    else:
+        os.system('clear')
+        print("\nMoney withdrawal unsuccesful: Not enough balance.")
+        time.sleep(2)
+        startPage()
+        
+def withdrawSucces():
+    os.system('clear')
+    print("\nMoney withdrawal succesful\n")
+    print("Would you like a receipt?: \n")
+    print("(A)  YES")
+    print("(B)  NO")
+    global keys
+    keys = ""
+    menuChoice = getKey()
+    if (menuChoice == "A"):
+        printReceipt()
+    if (menuChoice == "B"):
+        finalPage()
+        
+def printReceipt():
+    os.system('clear')
+    print('placeholder for printing receipt')
+    time.sleep(2)
+    finalPage()
+    
+def finalPage():
+    os.system('clear')
+    print('Thanks for using El Banco Del Los Hermanos')
+    print('\n We hope to see you again in the near future!')
+    time.sleep(3)
+    startPage()
+    
 startPage()

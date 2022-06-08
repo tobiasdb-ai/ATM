@@ -1,10 +1,17 @@
+from colorama import Fore
+from colorama import Style
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 from pad4pi import rpi_gpio
+from smbus import SMBus
 import time
+import datetime
 import mysql.connector
 import sys
 import os
+
+address = 0x8
+bus = SMBus(1)
 
 GPIO.setwarnings(False)
 
@@ -62,10 +69,10 @@ def readCard():
 
 def startPage():
     os.system('clear')
-    print("\nWelcome to El Banco Del Los Hermanos")
+    print(Style.BRIGHT + "\nWelcome to El Banco Del Los Hermanos")
     print("Scan your card to begin")
     global iban 
-    iban = readCard()
+    iban = readCard()[:16]
     loginPage()
 
 def loginPage():
@@ -148,7 +155,7 @@ def balancePage():
     print(f"Your current account balance is: {str(balance)} EURO")
     print("\nSelect what you want to do:")
     print("(A)  Withdraw money")
-    print("\n(*)  STOP")
+    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
     keys = ""
     menuChoice = getKey()
     if (menuChoice == "A"):
@@ -204,14 +211,14 @@ def dbWithdraw(amount):
         newBalance = balance - amount
         db.execute("UPDATE `pinautomaat_elba`.`bank_account` SET `balance` = '" + str(newBalance) + "' WHERE(`id` = '" + str(accID) + "');")
         mydb.commit()
-        withdrawSucces()
+        withdrawSucces(amount)
     else:
         os.system('clear')
         print("\nMoney withdrawal unsuccesful: Not enough balance.")
         time.sleep(2)
         startPage()
         
-def withdrawSucces():
+def withdrawSucces(amount):
     os.system('clear')
     print("\nMoney withdrawal succesful\n")
     print("Would you like a receipt?: \n")
@@ -220,16 +227,13 @@ def withdrawSucces():
     global keys
     keys = ""
     menuChoice = getKey()
+    global iban
     if (menuChoice == "A"):
-        printReceipt()
+        printReceipt("1",iban,iban[-2:],str(amount))
+        finalPage()
     if (menuChoice == "B"):
         finalPage()
         
-def printReceipt():
-    os.system('clear')
-    print('placeholder for printing receipt')
-    time.sleep(2)
-    finalPage()
     
 def finalPage():
     os.system('clear')
@@ -237,5 +241,29 @@ def finalPage():
     print('\n We hope to see you again in the near future!')
     time.sleep(3)
     startPage()
+
+def writeData(value):
+    byteValue = StringToBytes(value)
+    bus.write_i2c_block_data(address,0x00,byteValue)
+    return -1
+
+def StringToBytes(val):
+    retVal = []
+    for c in val:
+        retVal.append(ord(c))
+    return retVal
+
+def printReceipt(rctranID, rcIBAN, rcpasnr, rcamount):
+    dateTimeStamp = datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')
+    writeData(dateTimeStamp)
+    time.sleep(0.2)
+    writeData(rctranID)
+    time.sleep(0.2)
+    writeData(rcIBAN)
+    time.sleep(0.2)
+    writeData(rcpasnr)
+    time.sleep(0.2)
+    writeData(rcamount)
+    time.sleep(0.2)
     
 startPage()

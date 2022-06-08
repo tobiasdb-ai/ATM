@@ -32,11 +32,4 @@ def printReceipt(tranID, IBAN, pasnr, amount):
     
     
 
-while True:
-    tranID = input("Please input the transaction id: ")
-    IBAN = input("Please input the IBAN: ")
-    pasnr = input("Please input the pasnr: ")
-    amount = input("Please input the amount: ")
-    printReceipt(tranID, IBAN, pasnr, amount)
-    time.sleep(5)
-    input("Press return to print another receipt")
+printReceipt("1","2","3","4")

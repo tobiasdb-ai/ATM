@@ -66,9 +66,9 @@ def getKey():
     return keys[-1:]
 
 db = mydb.cursor()
-db.execute("SELECT pin FROM bank_account WHERE iban = \"" + iban[:16] + "\"")
+db.execute("SELECT * FROM card WHERE iban = \"" + iban[:16] + "\"")
 result = db.fetchone()
-print(result[0])
+print(result)
 hideKeys = 1              # 0-->No chars   1--> * 2--> chars
 password = getPassword()
 

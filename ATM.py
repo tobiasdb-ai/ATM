@@ -3,12 +3,14 @@ from mfrc522 import SimpleMFRC522
 from pad4pi import rpi_gpio
 import time
 import mysql.connector
+import sys
 import os
 
 GPIO.setwarnings(False)
 
 hideKeys = 0
 iban = ''
+accID = ''
 
 mydb = mysql.connector.connect(
     host='145.24.222.168',
@@ -23,9 +25,11 @@ db = mydb.cursor()
 def printKey(key):
     global keys
     if (hideKeys == 1):
-        print("*", end="")
+        sys.stdout.write("*")
+        sys.stdout.flush()
     elif (hideKeys == 2):
-        print(key[-1], end="")
+        sys.stdout.write(key[-1])
+        sys.stdout.flush()
     keys += key
 
 
@@ -58,7 +62,7 @@ def readCard():
 
 def startPage():
     os.system('clear')
-    print("Welcome to El Banco Del Los Hermanos")
+    print("\nWelcome to El Banco Del Los Hermanos")
     print("Scan your card to begin")
     global iban 
     iban = readCard()
@@ -66,17 +70,36 @@ def startPage():
 
 def loginPage():
     global hideKeys
-    db.execute("SELECT pin FROM bank_account WHERE iban = \"" + iban[:16] + "\"")
+    global accID
+    global keys
+    os.system('clear')
+    db.execute("SELECT * FROM card WHERE iban = \"" + iban[:16] + "\"")
     result = db.fetchone()
+    accID = result[3]
     hideKeys = 1              # 0-->No chars   1--> * 2--> chars
     print("Succesfully scanned card of account: " + iban)
     print("Type your pin to continue: ")
+    keys = ""
     password = getPassword()
-    if (password == str(result[0])):
-        hideKeys = 2
+    if (password == str(result[1])):
+        hideKeys = 0
         firstMenu()
     else:
-        print("Password is wrong")
+        hideKeys = 2
+        wrongPass()
+
+def wrongPass():
+    global keys
+    os.system('clear')
+    print("\nIncorrect password. What do you want to do:")
+    print("\n(A) Retry")
+    print("\n(*) STOP")
+    keys = ""
+    menuChoice = getKey()
+    if (menuChoice == "A"):
+        loginPage()
+    if (menuChoice == "*"):
+        startPage()
 
 
 def getPassword():
@@ -96,7 +119,7 @@ def firstMenu():
     print("Succesfully logged in to bank account\n")
     print("Select what you want to do:")
     print("(A)  Withdraw money")
-    print("(B)  Check account balance")
+    print("(B)  Check account balance\n")
     print("(*)  STOP")
     global keys
     keys = ""
@@ -104,10 +127,27 @@ def firstMenu():
     if (menuChoice == "A"):
         print("money withdrawal page")
     if (menuChoice == "B"):
-        print("account balance page")
+        balancePage()
     if (menuChoice == "*"):
-        return
+        startPage()
 
-
+def balancePage():
+    global keys
+    os.system('clear')
+    print("\nAccount Balance Page:\n")
+    db.execute("SELECT balance FROM bank_account WHERE id = \"" + str(accID) + "\"")
+    result = db.fetchone()
+    balance = "{:.2f}".format(result[0]/100)
+    print(f"Your current account balance is: {str(balance)} EURO")
+    print("\nSelect what you want to do:")
+    print("(A)  Withdraw money")
+    print("\n(*)  STOP")
+    keys = ""
+    menuChoice = getKey()
+    if (menuChoice == "A"):
+        print("money withdrawal page")
+    if (menuChoice == "*"):
+        startPage()
+    
 
 startPage()

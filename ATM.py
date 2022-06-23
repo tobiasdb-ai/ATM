@@ -79,12 +79,18 @@ def loginPage():
     global hideKeys
     global accID
     global keys
+    tries = 0
     os.system('clear')
     db.execute("SELECT * FROM card WHERE iban = \"" + iban[:16] + "\"")
     result = db.fetchone()
     accID = result[3]
+    ibanhalf = iban[:16]
+    tries = result[2]
+    print(f"you have {3 - tries} tries.")
+    if (tries >= 3):
+        maxTries()    
     hideKeys = 1              # 0-->No chars   1--> * 2--> chars
-    print("Succesfully scanned card of account: " + iban)
+    print("Succesfully scanned card of account: " + ibanhalf[0:10] + "******")
     print("Type your pin to continue: ")
     keys = ""
     password = getPassword()
@@ -93,20 +99,36 @@ def loginPage():
         firstMenu()
     else:
         hideKeys = 2
-        wrongPass()
+        wrongPass(tries)
 
-def wrongPass():
+def wrongPass(tries):
     global keys
     os.system('clear')
+    newTries = tries + 1
+    db.execute("UPDATE `pinautomaat_elba`.`card` SET `tries` = '" + str(newTries) + "' WHERE(`iban` = '" + str(iban[:16]) + "');")
+    mydb.commit()
+    if (newTries >= 3):
+        maxTries()
     print("\nIncorrect password. What do you want to do:")
-    print("\n(A)  Retry")
-    print("\n(*)  STOP")
+    print(Fore.YELLOW + "\n(A)  Retry" + Fore.RESET)
+    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
     keys = ""
     menuChoice = getKey()
     if (menuChoice == "A"):
         loginPage()
     if (menuChoice == "*"):
         startPage()
+        
+def maxTries():
+    global keys
+    os.system('clear')
+    print(Fore.RED + "Exceeded maximum amount of tries." + Fore.RESET)
+    print(Fore.RED + "Call 0900 0899 to recover your account." + Fore.RESET)
+    print(Fore.RED + "\n\nPress any key to continue." + Fore.RESET)
+    keys = ""
+    menuChoice = getKey()
+    startPage()
+    
 
 
 def getPassword():
@@ -130,11 +152,13 @@ def getKey():
 
 def firstMenu():
     os.system('clear')
+    db.execute("UPDATE `pinautomaat_elba`.`card` SET `tries` = '" + str(0) + "' WHERE(`iban` = '" + str(iban[:16]) + "');")
+    mydb.commit()
     print("Succesfully logged in to bank account\n")
     print("Select what you want to do:")
     print("(A)  Withdraw money")
     print("(B)  Check account balance\n")
-    print("(*)  STOP")
+    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
     global keys
     keys = ""
     menuChoice = getKey()
@@ -172,7 +196,7 @@ def withdrawPage():
     print("(C)  € 70")
     print("(D)  € 100")
     print("(#)  Custom amount")
-    print("\n(*)  STOP")
+    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
     global keys
     keys = ""
     menuChoice = getKey()
@@ -222,8 +246,8 @@ def withdrawSucces(amount):
     os.system('clear')
     print("\nMoney withdrawal succesful\n")
     print("Would you like a receipt?: \n")
-    print("(A)  YES")
-    print("(B)  NO")
+    print(Fore.GREEN + "(A)  YES" + Fore.RESET)
+    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
     global keys
     keys = ""
     menuChoice = getKey()

@@ -253,9 +253,10 @@ def withdrawSucces(amount):
     menuChoice = getKey()
     global iban
     if (menuChoice == "A"):
-        printReceipt("1",iban,iban[-2:],str(amount))
+        printReceipt("1",iban,iban[-2:],str(amount),"yes")
         finalPage()
     if (menuChoice == "B"):
+        printReceipt("1",iban,iban[-2:],str(amount),"no")
         finalPage()
         
     
@@ -277,7 +278,7 @@ def StringToBytes(val):
         retVal.append(ord(c))
     return retVal
 
-def printReceipt(rctranID, rcIBAN, rcpasnr, rcamount):
+def printReceipt(rctranID, rcIBAN, rcpasnr, rcamount, rcbon):
     dateTimeStamp = datetime.datetime.now().strftime('%y-%m-%d %H:%M:%S')
     writeData(dateTimeStamp)
     time.sleep(0.2)
@@ -288,6 +289,8 @@ def printReceipt(rctranID, rcIBAN, rcpasnr, rcamount):
     writeData(rcpasnr)
     time.sleep(0.2)
     writeData(rcamount)
+    time.sleep(0.2)
+    writeData(rcbon)
     time.sleep(0.2)
     
 startPage()

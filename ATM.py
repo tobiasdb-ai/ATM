@@ -247,7 +247,7 @@ def withdrawSucces(amount):
     print("\nMoney withdrawal succesful\n")
     print("Would you like a receipt?: \n")
     print(Fore.GREEN + "(A)  YES" + Fore.RESET)
-    print(Fore.RED + "\n(*)  STOP" + Fore.RESET)
+    print(Fore.RED + "\n(*)  NO" + Fore.RESET)
     global keys
     keys = ""
     menuChoice = getKey()
